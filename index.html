@@ -100,7 +100,7 @@
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             transition: background 0.2s;
         }
 
@@ -108,7 +108,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .card {
@@ -151,8 +151,42 @@
             border: 1px solid #30363d;
             border-radius: 12px;
             padding: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
+
+        /* Styling Toggle Switch (True / False) */
+        .switch-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #161b22;
+            border: 1px solid #444;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #30363d;
+            transition: .3s;
+            border-radius: 24px;
+            border: 1px solid #444;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: #8b949e;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent-green); border-color: #2ea043; }
+        input:checked + .slider:before { transform: translateX(24px); background-color: #fff; }
     </style>
 </head>
 <body>
@@ -161,37 +195,23 @@
     <div class="header">
         <h2>
             Solar Vending Monitor
-            
-            <!-- Logo Bluetooth Glossy SVG Persis Gambar -->
             <svg id="btIcon" class="bt-icon-glossy" viewBox="0 0 100 100">
                 <defs>
-                    <!-- Gradient Hijau Glossy saat Terhubung -->
                     <radialGradient id="gradConnected" cx="35%" cy="30%" r="70%">
                         <stop offset="0%" stop-color="#4caf50" />
                         <stop offset="50%" stop-color="#2e7d32" />
                         <stop offset="100%" stop-color="#1b5e20" />
                     </radialGradient>
-
-                    <!-- Gradient Gelap saat Terputus -->
                     <radialGradient id="gradDisconnected" cx="35%" cy="30%" r="70%">
                         <stop offset="0%" stop-color="#30363d" />
                         <stop offset="70%" stop-color="#161b22" />
                         <stop offset="100%" stop-color="#0d1117" />
                     </radialGradient>
                 </defs>
-
-                <!-- Lingkaran Background -->
                 <circle class="bg-circle" cx="50" cy="50" r="46" />
-                
-                <!-- Pantulan Glossy Atas (Efek Kilau) -->
                 <path d="M 12,38 A 44,44 0 0,1 88,38 A 46,20 0 0,0 12,38 Z" fill="rgba(255,255,255,0.18)" />
-
-                <!-- Simbol Bluetooth Resmi -->
                 <path class="bt-symbol" d="M 50,18 L 50,82 L 68,66 L 36,36 L 68,34 L 50,18 Z" 
-                      fill="none" 
-                      stroke-width="7" 
-                      stroke-linecap="round" 
-                      stroke-linejoin="round" />
+                      fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
         </h2>
     </div>
@@ -205,7 +225,7 @@
         <input type="password" id="inputPin" placeholder="******" style="width: 100%; padding: 10px; margin: 8px 0 12px 0; border-radius: 6px; border: 1px solid #444; background: #161b22; color: #fff; font-size: 1.1rem; text-align: center;">
         <button onclick="submitPin()" style="width: 100%; padding: 10px; background: #388bfd; border: none; color: #fff; border-radius: 6px; font-weight: bold; cursor: pointer;">Verifikasi PIN</button>
     </div>
-
+    
     <!-- Area Dashboard Monitoring (Terkunci Sebelum Auth) -->
     <div id="mainDashboard" style="opacity: 0.4; pointer-events: none;">
         <div class="grid-cards">
@@ -222,17 +242,55 @@
                 <div class="card-value val-power" id="valPower">0.00 <span class="unit">W</span></div>
             </div>
         </div>
+        
+        <!-- Indikator Status Solar Panel -->
+        <div class="card full-width" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; margin-top: 4px;">
+            <div class="card-title" style="margin: 0;">Status Solar</div>
+            <div id="solarStatusBadge" style="font-weight: bold; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; background: #30363d; color: #8b949e; letter-spacing: 0.5px;">OFF</div>
+        </div>
 
         <!-- Form Setting -->
         <div class="card full-width" style="margin-top: 15px; text-align: left;">
             <div class="card-title" style="margin-bottom: 12px;">Pengaturan Mesin (BLE)</div>
             
-            <label style="font-size: 0.85rem;">Volt Cutoff (V):</label>
-            <input type="number" id="inputCutoff" step="0.1" style="width: 100%; padding: 8px; margin: 4px 0 12px 0; border-radius: 6px; border: 1px solid #444; background: #161b22; color: #fff;">
+            <!-- Baris 1: Volt Cutoff, Reconnect, Limited -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                <div>
+                    <label style="font-size: 0.8rem;">Cutoff :(V)</label>
+                    <input type="number" id="inputCutoff" step="0.1" style="width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid #444; background: #161b22; color: #fff; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem;">change :(V)</label>
+                    <input type="number" id="inputReconnect" step="0.1" style="width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid #444; background: #161b22; color: #fff; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem;">Limited :(V)</label>
+                    <input type="number" id="inputLimited" step="0.1" style="width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid #444; background: #161b22; color: #fff; box-sizing: border-box;">
+                </div>
+            </div>
 
-            <label style="font-size: 0.85rem;">Volt Reconnect (V):</label>
-            <input type="number" id="inputReconnect" step="0.1" style="width: 100%; padding: 8px; margin: 4px 0 12px 0; border-radius: 6px; border: 1px solid #444; background: #161b22; color: #fff;">
+            <!-- Baris 2: Faktor Kalibrasi & Pompa Kalibrasi -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                <div>
+                    <label style="font-size: 0.8rem;">Volt Kalibrasi:</label>
+                    <input type="number" id="inputKalibrasi" step="0.1" style="width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid #444; background: #161b22; color: #fff; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem;">Pompa Kalibrasi:</label>
+                    <input type="number" id="inputPompaKalibrasi" step="0.1" style="width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid #444; background: #161b22; color: #fff; box-sizing: border-box;">
+                </div>
+            </div>
 
+            <!-- Baris Toggle True / False (Contoh: Mode Otomatis) -->
+            <div class="switch-container">
+                <span style="font-size: 0.85rem; color: var(--text-main);">Mode Test Pompa:</span>
+                <label class="switch">
+                    <input type="checkbox" id="inputModePompa">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Tombol Aksi -->
             <div style="display: flex; gap: 8px;">
                 <button onclick="readSettings()" style="flex: 1; padding: 10px; background: #388bfd; border: none; color: #fff; border-radius: 6px; font-weight: bold; cursor: pointer;">Ambil Setting</button>
                 <button onclick="saveSettings()" style="flex: 1; padding: 10px; background: #2ea043; border: none; color: #fff; border-radius: 6px; font-weight: bold; cursor: pointer;">Kirim Setting</button>
@@ -305,7 +363,6 @@
         const response = decoder.decode(event.target.value);
 
         if (response === "AUTH_OK") {
-            //alert("Autentikasi Berhasil!");
             document.getElementById('authSection').style.display = "none";
             document.getElementById('mainDashboard').style.opacity = "1";
             document.getElementById('mainDashboard').style.pointerEvents = "auto";
@@ -331,6 +388,19 @@
             document.getElementById('valVolt').innerHTML = `${data.v.toFixed(2)} <span class="unit">V</span>`;
             document.getElementById('valCurr').innerHTML = `${data.i.toFixed(2)} <span class="unit">A</span>`;
             document.getElementById('valPower').innerHTML = `${data.p.toFixed(2)} <span class="unit">W</span>`;
+            
+            const statusBadge = document.getElementById('solarStatusBadge');
+            if (data.charging) {
+                statusBadge.innerText = "CHARGING";
+                statusBadge.style.background = "rgba(46, 160, 67, 0.2)";
+                statusBadge.style.color = "#2ea043";
+                statusBadge.style.boxShadow = "0 0 10px rgba(46, 160, 67, 0.3)";
+            } else {
+                statusBadge.innerText = "OFF";
+                statusBadge.style.background = "rgba(139, 148, 158, 0.15)";
+                statusBadge.style.color = "#8b949e";
+                statusBadge.style.boxShadow = "none";
+            }
         } catch (e) {
             console.error("Error parsing JSON:", e);
         }
@@ -374,6 +444,12 @@
 
             document.getElementById('inputCutoff').value = data.v_cut;
             document.getElementById('inputReconnect').value = data.v_rec;
+            document.getElementById('inputKalibrasi').value = data.f_kalibrasi;
+            document.getElementById('inputPompaKalibrasi').value = data.p_kalibrasi;
+            document.getElementById('inputLimited').value = data.v_limited;
+            
+            // Set status toggle true / false dari ESP32
+            document.getElementById('inputModePompa').checked = (data.test_pompa === 1);
         } catch (e) {
             console.error("Gagal membaca setting:", e);
         }
@@ -385,12 +461,21 @@
             return;
         }
 
-        const cutVal = parseFloat(document.getElementById('inputCutoff').value);
-        const recVal = parseFloat(document.getElementById('inputReconnect').value);
-
+        const cutVal    = parseFloat(document.getElementById('inputCutoff').value);
+        const recVal    = parseFloat(document.getElementById('inputReconnect').value);
+        const fKal      = parseFloat(document.getElementById('inputKalibrasi').value);
+        const pKal      = parseFloat(document.getElementById('inputPompaKalibrasi').value);
+        const limitVal  = parseFloat(document.getElementById('inputLimited').value);
+        //const testPompa   = document.getElementById('inputModePompa').checked; // Nilai true / false
+        const testPompa   = document.getElementById('inputModePompa').checked ? 1 : 0;
+        
         const newSettingObj = {
             v_cut: cutVal,
-            v_rec: recVal
+            v_rec: recVal,
+            f_kalibrasi: fKal, 
+            p_kalibrasi: pKal,
+            v_limited: limitVal,
+            test_pompa: testPompa // Dikirim ke ESP32 sebagai boolean true/false
         };
 
         const jsonString = JSON.stringify(newSettingObj);
